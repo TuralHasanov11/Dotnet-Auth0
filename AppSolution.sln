@@ -9,7 +9,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApp", "WebApp\WebApp.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharedKernel", "SharedKernel\SharedKernel.csproj", "{DE0967F9-8DA7-4842-813C-8CA30E293D54}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpaApp", "SpaApp\SpaApp.csproj", "{5EF999EB-F01A-4C6A-A792-547632E8DE97}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpaApp", "SpaApp\SpaApp.csproj", "{5EF999EB-F01A-4C6A-A792-547632E8DE97}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C7C59D1C-F539-47F8-898B-4BCA17E7B9F4}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
