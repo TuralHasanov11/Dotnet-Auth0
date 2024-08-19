@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using SharedKernel.Identity;
 using SpaApp.Identity;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using Yarp.ReverseProxy.Transforms;
 
@@ -23,7 +24,7 @@ builder.Services.AddReverseProxy()
 
             if (!string.IsNullOrEmpty(accessToken))
             {
-                request.ProxyRequest.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+                request.ProxyRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
             }
         });
     });

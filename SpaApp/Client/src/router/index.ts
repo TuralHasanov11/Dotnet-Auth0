@@ -39,11 +39,6 @@ const router = createRouter({
 router.beforeResolve(async (to, from, next) => {
   const authenticationStore = useAuthenticationStore()
 
-  // if (authenticationStore.isLoading) {
-  //   await authenticationStore.getUserInfo()
-  //   console.log('User info fetched')
-  // }
-
   if (
     to.meta.requiresPermission &&
     !authenticationStore.hasPermission(to.meta.requiresPermission as string)

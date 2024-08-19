@@ -1,6 +1,6 @@
 ﻿namespace SpaApp.Identity;
 
-public class IdentityClaimTypes
+public static class IdentityClaimTypes
 {
     public const string Permissions = "permissions";
 }

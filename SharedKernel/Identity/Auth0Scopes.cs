@@ -11,3 +11,8 @@ public static class Auth0Scopes
 
     public static string[] All => [Picture, Openid, Profile, Email, ViewCourse];
 }
+
+
+
+
+
