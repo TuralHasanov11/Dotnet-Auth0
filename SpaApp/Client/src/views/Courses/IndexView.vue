@@ -16,13 +16,13 @@ onMounted(async () => {
 })
 </script>
 <template>
-  <section id="courses" class="p-5">
-    <h1>Courses</h1>
+    <section id="courses" class="p-5">
+        <h1>Courses</h1>
 
-    <ul>
-      <li v-for="course in courses" :key="course.id">
-        <span>{{ course.name }}</span>
-      </li>
-    </ul>
-  </section>
+        <ul>
+            <li v-for="course in courses" :key="course.id">
+                <span>{{ course.name }}</span>
+            </li>
+        </ul>
+    </section>
 </template>

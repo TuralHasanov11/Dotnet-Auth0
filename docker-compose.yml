@@ -1,0 +1,41 @@
+services:
+  webapi:
+    image: ${DOCKER_REGISTRY-}webapi
+    container_name: auth0.webapi
+    build:
+      context: .
+      dockerfile: WebApi/Dockerfile
+    ports:
+      - "5100:5100"
+      - "5101:5101"
+    networks:
+      - proxybackend
+
+  # spaapp:
+  #   image: ${DOCKER_REGISTRY-}spaapp
+  #   container_name: auth0.spaapp
+  #   build:
+  #     context: .
+  #     dockerfile: SpaApp/Dockerfile
+  #   ports:
+  #     - "5200:5200"
+  #     - "5201:5201"
+  #   networks:
+  #     - proxybackend
+
+  webapp:
+    image: ${DOCKER_REGISTRY-}webapp
+    container_name: auth0.webapp
+    build:
+      context: .
+      dockerfile: WebApp/Dockerfile
+    ports:
+      - "5000:5000"
+      - "5001:5001"
+    networks:
+      - proxybackend
+
+networks:
+  proxybackend:
+    name: proxybackend
+    driver: bridge

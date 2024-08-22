@@ -67,19 +67,29 @@ builder.Services.AddAuth0WebAppAuthentication(options =>
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddHttpClient("NoSslVerificationClient")
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+    {
+        // Disabling SSL certificate validation
+        ServerCertificateCustomValidationCallback =
+            (httpRequestMessage, cert, cetChain, policyErrors) => true
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("ApiPolicy", policy =>
+        policy.RequireAuthenticatedUser());
+});
 
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, ApplicationAuthorizationPolicyProvider>();
 builder.Services.AddSingleton<IAuthorizationHandler, ScopeAuthorizationHandler>();
 
 builder.Services.AddHttpClient();
 
-
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-
 }
 
 app.UseHttpsRedirection();
@@ -101,14 +111,15 @@ app.MapGet("/api/authentication/register", async (HttpContext httpContext, strin
 
 app.MapGet("/api/authentication/login", async (HttpContext httpContext, string returnUrl = "/") =>
     {
-    var authenticationProperties = new LoginAuthenticationPropertiesBuilder()
-        .WithRedirectUri(returnUrl)
-        .Build();
+        var authenticationProperties = new LoginAuthenticationPropertiesBuilder()
+            .WithRedirectUri(returnUrl)
+            .Build();
 
-    await httpContext.ChallengeAsync(Auth0Constants.AuthenticationScheme, authenticationProperties);
-});
+        await httpContext.ChallengeAsync(Auth0Constants.AuthenticationScheme, authenticationProperties);
+    });
 
-app.MapGet("/api/authentication/logout", async (HttpContext httpContext) => {
+app.MapGet("/api/authentication/logout", async (HttpContext httpContext) =>
+{
     var authenticationProperties = new LogoutAuthenticationPropertiesBuilder()
             .WithRedirectUri("/")
             .Build();
@@ -126,7 +137,6 @@ app.MapGet("/api/authentication/user-info", async (HttpContext httpContext) =>
         httpContext.User.FindAll(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToArray(),
         httpContext.User.FindAll(c => c.Type == IdentityClaimTypes.Permissions).Select(c => c.Value).ToArray()));
 }).RequireAuthorization();
-
 
 app.MapReverseProxy();
 

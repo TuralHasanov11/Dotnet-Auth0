@@ -1,26 +1,26 @@
 export interface User {
-  email: string
-  name: string
-  profileImage?: string
-  roles: string[]
-  permissions: string[]
+    email: string
+    name: string
+    profileImage?: string
+    roles: string[]
+    permissions: string[]
 }
 
 export interface Role {
-  id: string
-  name: string
-  permissions: string[]
+    id: string
+    name: string
+    permissions: string[]
 }
 
 export interface Course {
-  id: string
-  name: string
+    id: string
+    name: string
 }
 
 export class Permissions {
-  public static readonly ViewCourse: string = 'view:course'
+    public static readonly ViewCourse: string = 'view:course'
 
-  public static all(): string[] {
-    return [this.ViewCourse]
-  }
+    public static all(): string[] {
+        return [this.ViewCourse]
+    }
 }

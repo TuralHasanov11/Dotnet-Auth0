@@ -4,7 +4,11 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Http.Resilience;
+using Polly;
+using Polly.Timeout;
 using SharedKernel.Identity;
+using System.Net.Http.Headers;
 using WebApp.Identity;
 using Yarp.ReverseProxy.Transforms;
 
@@ -60,12 +64,77 @@ builder.Services
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("ApiPolicy", policy =>
+        policy.RequireAuthenticatedUser());
+});
 
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, ApplicationAuthorizationPolicyProvider>();
 builder.Services.AddSingleton<IAuthorizationHandler, ScopeAuthorizationHandler>();
 
 builder.Services.AddHttpClient();
+
+builder.Services.AddHttpClient("NoSslVerificationClient", options =>
+{
+    options.BaseAddress = new Uri("https://localhost:7096");
+})
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+    {
+        // Disabling SSL certificate validation
+        ServerCertificateCustomValidationCallback = (httpRequestMessage, cert, cetChain, policyErrors) => true
+    })
+//.AddResilienceHandler("ApiService", configuration =>
+//{
+//    configuration.AddConcurrencyLimiter(100);
+
+//    configuration.AddRetry(new HttpRetryStrategyOptions
+//    {
+//        MaxRetryAttempts = 5,
+//        BackoffType = DelayBackoffType.Exponential,
+//        UseJitter = true,
+//        Delay = TimeSpan.Zero
+//    });
+
+//    configuration.AddCircuitBreaker(new HttpCircuitBreakerStrategyOptions
+//    {
+//        SamplingDuration = TimeSpan.FromSeconds(5),
+//        FailureRatio = 0.9,
+//        MinimumThroughput = 5,
+//        BreakDuration = TimeSpan.FromSeconds(5)
+//    });
+
+//    configuration.AddTimeout(TimeSpan.FromSeconds(5));
+//});
+//.AddStandardResilienceHandler()
+//.Configure(options => {
+//    options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(10);
+
+//    options.Retry.MaxRetryAttempts = 5;
+//    options.Retry.Delay = TimeSpan.Zero;
+
+//    options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(5);
+//    options.CircuitBreaker.FailureRatio = 0.9;
+//    options.CircuitBreaker.MinimumThroughput = 5;
+//    options.CircuitBreaker.BreakDuration = TimeSpan.FromSeconds(5);
+
+//    options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(1);
+//});
+.AddStandardHedgingHandler()
+.Configure(options =>
+{
+    options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(10);
+
+    options.Hedging.MaxHedgedAttempts = 5;
+    options.Hedging.Delay = TimeSpan.FromMicroseconds(1);
+
+    options.Endpoint.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(5);
+    options.Endpoint.CircuitBreaker.FailureRatio = 0.9;
+    options.Endpoint.CircuitBreaker.MinimumThroughput = 5;
+    options.Endpoint.CircuitBreaker.BreakDuration = TimeSpan.FromSeconds(5);
+
+    options.Endpoint.Timeout.Timeout = TimeSpan.FromSeconds(1);
+});
 
 var app = builder.Build();
 
@@ -89,19 +158,23 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
+app.MapGet("/client/courses", async (HttpContext httpContext, IHttpClientFactory httpClientFactory) =>
+{
+    var httpClient = httpClientFactory.CreateClient("NoSslVerificationClient");
 
-//app.MapGet("/api/courses", async (HttpContext httpContext, IHttpClientFactory httpClientFactory) =>
-//{
-//    var httpClient = httpClientFactory.CreateClient();
+    var accessToken = await httpContext.GetTokenAsync("access_token");
 
-//    var accessToken = await httpContext.GetTokenAsync("access_token");
+    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-//    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+    using var response = await httpClient.GetAsync("api/courses");
 
-//    using var response = await httpClient.GetAsync("https://localhost:7096/api/courses");
+    if(!response.IsSuccessStatusCode)
+    {
+        return "Forbidden";
+    }
 
-//    return await response.Content.ReadAsStringAsync();
-//});
+    return await response.Content.ReadAsStringAsync();
+});
 
 app.MapReverseProxy();
 

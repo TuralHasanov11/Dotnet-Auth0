@@ -3,14 +3,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SharedKernel.Identity;
 using System.Security.Claims;
-using WebApp.Identity;
 using WebApp.Models;
 
 namespace WebApp.Controllers
 {
     public class AccountController : Controller
     {
-
         [Authorize]
         public async Task<IActionResult> Profile()
         {

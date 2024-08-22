@@ -52,7 +52,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, ApplicationAuthorizationPolicyProvider>();
 builder.Services.AddSingleton<IAuthorizationHandler, ScopeAuthorizationHandler>();
 
@@ -83,7 +82,6 @@ app.UseCors("AllowSpecificOrigin");
 
 app.UseAuthentication();
 app.UseAuthorization();
-
 
 app.MapGet("/api/courses", () =>
 {
